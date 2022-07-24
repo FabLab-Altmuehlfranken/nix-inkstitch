@@ -1,0 +1,19 @@
+Index: b/lib/stitches/contour_fill.py
+===================================================================
+--- a/lib/stitches/contour_fill.py
++++ b/lib/stitches/contour_fill.py
+@@ -3,7 +3,13 @@ from itertools import chain
+
+ import networkx as nx
+ import numpy as np
+-import trimesh
++
++import warnings
++with warnings.catch_warnings():
++    warnings.filterwarnings("ignore", category=DeprecationWarning)
++    import trimesh
++
++
+ from shapely.geometry import GeometryCollection, MultiPolygon, Polygon, LineString, Point
+ from shapely.geometry.polygon import orient
+ from shapely.ops import nearest_points

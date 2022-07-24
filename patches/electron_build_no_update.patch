@@ -1,0 +1,12 @@
+Index: b/bin/build-electron
+===================================================================
+--- a/bin/build-electron
++++ b/bin/build-electron
+@@ -27,5 +27,5 @@ if [[ "$VERSION" =~ ^v[0-9][.0-9]+$ ]];
+ fi
+ cd electron
+ which yarn > /dev/null 2>&1 || npm install -g yarn
+-yarn --link-duplicates --pure-lockfile
+-yarn run dist ${args}
++node .electron-vue/build.js
++

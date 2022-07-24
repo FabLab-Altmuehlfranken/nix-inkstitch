@@ -1,0 +1,13 @@
+Index: b/electron/src/main/index.js
+===================================================================
+--- a/electron/src/main/index.js
++++ b/electron/src/main/index.js
+@@ -55,7 +55,7 @@ function createWindow() {
+     height: 563,
+     useContentSize: true,
+     width: 1000,
+-    webPreferences: {nodeIntegration: true}
++    webPreferences: {nodeIntegration: true, contextIsolation: false, worldSafeExecuteJavaScript: false}
+   })
+ 
+   mainWindow.loadURL(winURL)

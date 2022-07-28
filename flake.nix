@@ -4,6 +4,15 @@
   outputs = { self, nixpkgs }:
     let
       pkgs = import nixpkgs {system="x86_64-linux";};
+      inkscape_python = let
+        is_python_env = drv: (pkgs.lib.strings.hasPrefix "python3-" drv.name &&
+                              pkgs.lib.strings.hasSuffix "-env" drv.name);
+        inkscape_python = pkgs.lib.lists.findSingle
+          is_python_env
+          "none"
+          "multiple"
+          pkgs.inkscape.nativeBuildInputs;
+      in assert pkgs.lib.isDerivation inkscape_python; inkscape_python;
       inkstitch_version = "2.2.0";
       inkstitch_src = pkgs.fetchzip {
         url = "https://github.com/inkstitch/inkstitch/archive/refs/tags/v${inkstitch_version}.tar.gz";
@@ -20,7 +29,7 @@
         packageJSON = "${src}/package.json";
         yarnLock = "${src}/yarn.lock";
       };
-      inkstitch_python_env = given_pyembroidery: pkgs.python3.withPackages (ps: [
+      inkstitch_python_env = given_pyembroidery: inkscape_python.withPackages (ps: [
         # inkstitch-owned python module -- must be given as argument!!
         given_pyembroidery
 
@@ -44,8 +53,9 @@
         ps.scipy
         ps.six
       ]);
-    in {
-      packages.x86_64-linux.pyembroidery = with pkgs.python3.pkgs; buildPythonPackage rec {
+    in
+      {
+      packages.x86_64-linux.pyembroidery = with inkscape_python.pkgs; buildPythonPackage rec {
         pname = "pyembroidery";
         version = "1.4.36";
         src = fetchPypi {

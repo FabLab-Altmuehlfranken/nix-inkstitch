@@ -9,14 +9,6 @@
         url = "https://github.com/inkstitch/inkstitch/archive/refs/tags/v${inkstitch_version}.tar.gz";
         sha256 = "sha256-WitR7WDReDSABlDfzwCrNuqxniv0JWRlkn80zvUuq4U=";
       };
-      inkstitch_panzoom_src = pkgs.fetchgit {
-        url = "https://github.com/inkstitch/svg.panzoom.js";
-        rev = "98c25f32925ac62f49b81d3054d99b8c183afad8";
-        sha256 = "";
-        fetchSubmodules = true;
-        deepClone = true;
-        leaveDotGit = true;
-      };
       inkstitch_src_patched_yarn_deps = pkgs.applyPatches {
         src = inkstitch_src;
         patches = [ ./patches/update_js_deps.patch ];
@@ -25,8 +17,8 @@
         pname = "inkstitch-yarn-deps";
         version = "${inkstitch_version}";
         src = "${inkstitch_src_patched_yarn_deps}/electron";
-        packageJSON = "${inkstitch_src_patched_yarn_deps}/electron/package.json";
-        yarnLock = "${inkstitch_src_patched_yarn_deps}/electron/yarn.lock";
+        packageJSON = "${src}/package.json";
+        yarnLock = "${src}/yarn.lock";
       };
       inkstitch_python_env = given_pyembroidery: pkgs.python3.withPackages (ps: [
         # inkstitch-owned python module -- must be given as argument!!
@@ -152,7 +144,7 @@
           pkgs.inkscape
           self.packages.x86_64-linux.inkstitch 
         ];
-        nativeBuildInputs = [ pkgs.makeWrapper ];
+        nativeBuildInputs = with pkgs; [ makeWrapper findutils ];
 
         postBuild = ''
             export SITE_PACKAGES=$(find "${inkstitch_python_env self.packages.x86_64-linux.pyembroidery}" -type d -name 'site-packages')

@@ -42,6 +42,10 @@ Color Palette installation is not supported.
   - During my tests the vue router ran into an infinite recursion issue.
     This is fixed by removing all routes, which disabled palette installation.
 
+## Troubleshooting
+- Is there an Inkstitch in `~/.config/inkscape/extensions/`?
+  If yes, remove -- both inkstitches conflict.
+
 ## License
 The code in this repository is licensed under [GPLv3 or later](./COPYING).
 Please note that the libraries referenced by this flake may use a different license.

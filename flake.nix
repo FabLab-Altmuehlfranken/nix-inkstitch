@@ -1,7 +1,18 @@
 {
   description = "inkscape with inkstitch";
 
-  outputs = { self, nixpkgs }:
+  inputs = {
+    flake-compat = {
+      url = "github:edolstra/flake-compat";
+      flake = false;
+    };
+
+    nixpkgs = {
+      url = "github:nixos/nixpkgs/nixos-unstable";
+    };
+  };
+
+  outputs = { self, nixpkgs, ... }:
     let
       pkgs = import nixpkgs {system="x86_64-linux";};
       inkscape_python = let

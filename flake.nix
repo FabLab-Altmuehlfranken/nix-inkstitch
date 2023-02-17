@@ -8,7 +8,7 @@
     };
 
     nixpkgs = {
-      url = "github:nixos/nixpkgs/nixos-unstable";
+      url = "github:nixos/nixpkgs/nixos-22.11";
     };
   };
 
@@ -140,6 +140,9 @@
 
         buildPhase = ''
             runHook preBuild
+
+            # required for openssl 3.0
+            export NODE_OPTIONS=--openssl-legacy-provider
 
             # patched version: only builds main.js, does not package into full application
             bash bin/build-electron

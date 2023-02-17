@@ -14,7 +14,7 @@
 
   outputs = { self, nixpkgs, ... }:
     let
-      pkgs = import nixpkgs {system="x86_64-linux";};
+      pkgs = import nixpkgs { system="x86_64-linux"; };
       inkscape_python = let
         is_python_env = drv: (pkgs.lib.strings.hasPrefix "python3-" drv.name &&
                               pkgs.lib.strings.hasSuffix "-env" drv.name);
@@ -66,79 +66,79 @@
       ]);
     in
       {
-      packages.x86_64-linux.pyembroidery = with inkscape_python.pkgs; buildPythonPackage rec {
-        pname = "pyembroidery";
-        version = "1.4.36";
-        src = fetchPypi {
-          inherit pname version;
-          sha256 = "sha256-GkEoxmdhjehd+ECrcJE7vVvRlnvk6qasO3NnCGlB/VQ=";
+        packages.x86_64-linux.pyembroidery = with inkscape_python.pkgs; buildPythonPackage rec {
+          pname = "pyembroidery";
+          version = "1.4.36";
+          src = fetchPypi {
+            inherit pname version;
+            sha256 = "sha256-GkEoxmdhjehd+ECrcJE7vVvRlnvk6qasO3NnCGlB/VQ=";
+          };
+          doCheck = false;
         };
-        doCheck = false;
-      };
 
-      packages.x86_64-linux.inkstitch = pkgs.stdenv.mkDerivation rec {
-        pname = "inkstitch";
-        version = "${inkstitch_version}";
-        src = inkstitch_src_patched_yarn_deps;
+        packages.x86_64-linux.inkstitch = pkgs.stdenv.mkDerivation rec {
+          pname = "inkstitch";
+          version = "${inkstitch_version}";
+          src = inkstitch_src_patched_yarn_deps;
 
-        patches = [
-          # looks for /usr/bin etc., then fails -> remove that section
-          ./patches/fix_path_correction.patch
+          patches = [
+            # looks for /usr/bin etc., then fails -> remove that section
+            ./patches/fix_path_correction.patch
 
-          # includes deprecated feature -> don't care
-          ./patches/trimesh_silence_deprecation_warning.patch
+            # includes deprecated feature -> don't care
+            ./patches/trimesh_silence_deprecation_warning.patch
 
-          # update requires internet connection -> disable update before build
-          ./patches/electron_build_no_update.patch
+            # update requires internet connection -> disable update before build
+            ./patches/electron_build_no_update.patch
 
-          # electorn got too many security features for inkstitch to work
-          # -> disable security features
-          ./patches/fix_electron_isolation.patch
+            # electorn got too many security features for inkstitch to work
+            # -> disable security features
+            ./patches/fix_electron_isolation.patch
 
-          # vue router causes infinite recursion
-          # -> remove all routes but one
-          ./patches/sledgehammer_fix_vue_router.patch
+            # vue router causes infinite recursion
+            # -> remove all routes but one
+            ./patches/sledgehammer_fix_vue_router.patch
 
-          # add error message when trying to install
-          # (part of electron application, but route got disabled in patch above)
-          ./patches/disable_palette_install.patch
+            # add error message when trying to install
+            # (part of electron application, but route got disabled in patch above)
+            ./patches/disable_palette_install.patch
 
-          # vue does not correctly load the port -> hardcode it
-          ./patches/hardcode_port.patch
-          
-          # invocation: do not use yarn develop, but instead pass path to electron
-          # (yarn develop also calls vue-electron build, which we called already during installation)
-          (pkgs.substituteAll {
-            electron_full_path = "${pkgs.electron}/bin/electron";
-            src = ./patches/electron_fix_invocation.patch.template;
-          })
-        ];
+            # vue does not correctly load the port -> hardcode it
+            ./patches/hardcode_port.patch
+            
+            # invocation: do not use yarn develop, but instead pass path to electron
+            # (yarn develop also calls vue-electron build, which we called already during installation)
+            (pkgs.substituteAll {
+              electron_full_path = "${pkgs.electron}/bin/electron";
+              src = ./patches/electron_fix_invocation.patch.template;
+            })
+          ];
 
-        nativeBuildInputs = with pkgs; [
-          # for python dependencies, hand-copied requirements.txt
-          (inkstitch_python_env self.packages.x86_64-linux.pyembroidery)
+          nativeBuildInputs = with pkgs; [
+            # for python dependencies, hand-copied requirements.txt
+            (inkstitch_python_env self.packages.x86_64-linux.pyembroidery)
 
-          # JS stuff
-          yarn
-          nodejs
+            # JS stuff
+            yarn
+            nodejs
 
-          # undocumented build dependencies
-          gettext
-          which
-        ];
-        propagatedBuildInputs = with pkgs; [
-          # pre-built yarn modules (circumvent required internet access of yarn/npm during build)
-          inkstitch_electron_yarn_modules
+            # undocumented build dependencies
+            gettext
+            which
+          ];
+          propagatedBuildInputs = with pkgs; [
+            # pre-built yarn modules (circumvent required internet access of yarn/npm during build)
+            inkstitch_electron_yarn_modules
 
-          # used at runtime (see patches above)
-          electron
-        ];
+            # used at runtime (see patches above)
+            electron
+          ];
 
-        preBuild = ''
+          preBuild = ''
             ln -sf ${inkstitch_electron_yarn_modules}/libexec/inkstitch-gui/node_modules electron/node_modules
           '';
 
-        buildPhase = ''
+          buildPhase = ''
             runHook preBuild
 
             # required for openssl 3.0
@@ -152,7 +152,7 @@
             runHook postBuild
           '';
 
-        installPhase = ''
+          installPhase = ''
             runHook preInstall
 
             export INKSCAPE_PLUGIN_PATH="$out/share/inkscape/extensions"
@@ -161,24 +161,24 @@
             
             runHook postInstall
           '';
-      };
-      packages.x86_64-linux.inkscape-inkstitch = pkgs.symlinkJoin {
-        name = "inkscape-inkstitch";
-        paths = [
-          pkgs.inkscape
-          self.packages.x86_64-linux.inkstitch 
-        ];
-        nativeBuildInputs = with pkgs; [ makeWrapper findutils ];
+        };
+        packages.x86_64-linux.inkscape-inkstitch = pkgs.symlinkJoin {
+          name = "inkscape-inkstitch";
+          paths = [
+            pkgs.inkscape
+            self.packages.x86_64-linux.inkstitch 
+          ];
+          nativeBuildInputs = with pkgs; [ makeWrapper findutils ];
 
-        postBuild = ''
+          postBuild = ''
             export SITE_PACKAGES=$(find "${inkstitch_python_env self.packages.x86_64-linux.pyembroidery}" -type d -name 'site-packages')
             rm -f $out/bin/inkscape
             makeWrapper "${pkgs.inkscape}/bin/inkscape" "$out/bin/inkscape-inkstitch" \
               --set INKSCAPE_DATADIR "$out/share" \
               --prefix PYTHONPATH ":" "$SITE_PACKAGES"
           '';
-      };
+        };
 
-      defaultPackage.x86_64-linux = self.packages.x86_64-linux.inkscape-inkstitch;
-    };
+        defaultPackage.x86_64-linux = self.packages.x86_64-linux.inkscape-inkstitch;
+      };
 }

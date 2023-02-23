@@ -30,6 +30,7 @@ Color Palette installation is not supported.
   - some path search includes `/usr`-paths, this is removed
   - `trimesh` include causes deprecation warnings, those are silenced
   - fix JS dependencies: fix reference in `package.json`, update `yarn.lock`
+  - silence all warnings as soon as flask is imported, as silencing using `PYTHONWARNINGS` did not work
 - Electron is used for some of the GUI, notably color palette installation and simulation/preview.
   This part of the package is thrown together and rather wonky, in particular:
   - The build process of Ink/Stitch is 1) generate `main.js` via vue-electron, then 2) package with `electron-builder`.

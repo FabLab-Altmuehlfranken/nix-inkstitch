@@ -105,6 +105,9 @@
 
             # vue does not correctly load the port -> hardcode it
             ./patches/hardcode_port.patch
+
+            # set filter to ignore all python-generated warnings
+            ./patches/ignore_python_warnings.patch
             
             # invocation: do not use yarn develop, but instead pass path to electron
             # (yarn develop also calls vue-electron build, which we called already during installation)

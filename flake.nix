@@ -1,6 +1,11 @@
 {
   description = "inkscape with inkstitch";
 
+  nixConfig = {
+    extra-substituters = [ "https://nix-serve.hq.c3d2.de" ];
+    extra-trusted-public-keys = [ "nix-serve.hq.c3d2.de:KZRGGnwOYzys6pxgM8jlur36RmkJQ/y8y62e52fj1ps=" ];
+  };
+
   inputs = {
     flake-compat = {
       url = "github:edolstra/flake-compat";

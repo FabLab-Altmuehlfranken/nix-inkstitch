@@ -12,6 +12,9 @@ Run with:
 nix run git+https://codeberg.org/tropf/nix-inkstitch
 ```
 
+nix will offer to add `https://nix-serve.hq.c3d2.de` as a binary cache.
+Answering **yes** is **recommended**, in order to avoid long builds (30+ min) on your local machine.
+
 > Parts of the software stack of Ink/Stitch are horribly outdated,
 > and this flake is *very* hacky.
 > I highly recommend to not install it permanently on your system.

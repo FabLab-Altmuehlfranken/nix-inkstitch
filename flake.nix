@@ -37,8 +37,8 @@
         #};
         inkstitch_src = pkgs.fetchgit {
           url = "https://codeberg.org/tropf/inkstitch.git";
-          rev = "2ca88ca7dbca0638453596973f7337d28016a274";
-          hash = "sha256-GP5EH6Sl6mvoMACQaMLuEHDWaS9RriHcB7tIov/8GjM=";
+          rev = "1a16df72578f85d1a2f8dc18838cef52c1173e50";
+          hash = "sha256-N222oQENTIUwcHIlO3yoME+yjY3wPlEZRgnP1/Wuf3A=";
         };
         inkstitch_src_patched_yarn_deps = pkgs.applyPatches {
           src = inkstitch_src;
@@ -93,12 +93,7 @@
           ${pkgs.electron}/bin/electron $@
         '';
 
-        inkstitch = let
-          inkstitch_python_wrapper = pkgs.writeShellScript "run-python-script" ''
-            cd "$(${pkgs.coreutils}/bin/dirname "$0")"
-            ${selfpkgs.pyembroidery-python}/bin/python @script@ $0
-          '';
-        in pkgs.stdenv.mkDerivation rec {
+        inkstitch = pkgs.stdenv.mkDerivation rec {
           pname = "inkstitch";
           version = "${inkstitch_version}";
           src = inkstitch_src_patched_yarn_deps;
@@ -140,11 +135,6 @@
             yarn --cwd electron just-build
             make inx
 
-            # this is performed by the python build process by default
-            # here we have to create our own inkstitch binary
-            substitute ${inkstitch_python_wrapper} bin/inkstitch --subst-var-by script '../inkstitch.py'
-            chmod a+x bin/inkstitch
-
             runHook postBuild
           '';
 
@@ -168,13 +158,13 @@
           nativeBuildInputs = with pkgs; [ makeWrapper findutils ];
 
           postBuild = ''
-              export SITE_PACKAGES=$(find "${inkstitch_python_env selfpkgs.pyembroidery}" -type d -name 'site-packages')
-              rm -f $out/bin/inkscape
-              makeWrapper "${pkgs.inkscape}/bin/inkscape" "$out/bin/inkscape-inkstitch" \
-                --set INKSCAPE_DATADIR "$out/share" \
-                --prefix PYTHONPATH ":" "$SITE_PACKAGES" \
-                --prefix PATH ":" "${selfpkgs.inkstitch-electron}"
-            '';
+            export SITE_PACKAGES=$(find "${inkstitch_python_env selfpkgs.pyembroidery}" -type d -name 'site-packages')
+            rm -f $out/bin/inkscape
+            makeWrapper "${pkgs.inkscape}/bin/inkscape" "$out/bin/inkscape-inkstitch" \
+              --set INKSCAPE_DATADIR "$out/share" \
+              --prefix PYTHONPATH ":" "$SITE_PACKAGES" \
+              --prefix PATH ":" "${selfpkgs.inkstitch-electron}"
+          '';
         };
       };
 

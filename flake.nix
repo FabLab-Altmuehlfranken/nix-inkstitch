@@ -43,7 +43,7 @@
         inkstitch_src_patched_yarn_deps = pkgs.applyPatches {
           src = inkstitch_src;
           #patches = [ ./patches/update_js_deps.patch ];
-          patches = [ ./patches/reenable_warns.patch ];
+          patches = [];
         };
         inkstitch_electron_yarn_modules = pkgs.mkYarnPackage rec {
           pname = "inkstitch-yarn-deps";
@@ -93,7 +93,12 @@
           ${pkgs.electron}/bin/electron $@
         '';
 
-        inkstitch = pkgs.stdenv.mkDerivation rec {
+        inkstitch = let
+          inkstitch_python_wrapper = pkgs.writeShellScript "run-python-script" ''
+            cd "$(${pkgs.coreutils}/bin/dirname "$0")"
+            ${selfpkgs.pyembroidery-python}/bin/python @script@ $0
+          '';
+        in pkgs.stdenv.mkDerivation rec {
           pname = "inkstitch";
           version = "${inkstitch_version}";
           src = inkstitch_src_patched_yarn_deps;
@@ -134,6 +139,11 @@
 
             yarn --cwd electron just-build
             make inx
+
+            # this is performed by the python build process by default
+            # here we have to create our own inkstitch binary
+            substitute ${inkstitch_python_wrapper} bin/inkstitch --subst-var-by script '../inkstitch.py'
+            chmod a+x bin/inkstitch
 
             runHook postBuild
           '';

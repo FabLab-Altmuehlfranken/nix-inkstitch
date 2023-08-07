@@ -37,8 +37,8 @@
         #};
         inkstitch_src = pkgs.fetchgit {
           url = "https://codeberg.org/tropf/inkstitch.git";
-          rev = "1a16df72578f85d1a2f8dc18838cef52c1173e50";
-          hash = "sha256-N222oQENTIUwcHIlO3yoME+yjY3wPlEZRgnP1/Wuf3A=";
+          rev = "28f6056ee3c03685c344645bec08f52eed3e3144";
+          hash = "sha256-5fwNYD/gjmvyOOFeDBw53ADEGdeIky9xj1q37zyVBzE=";
         };
         inkstitch_src_patched_yarn_deps = pkgs.applyPatches {
           src = inkstitch_src;
@@ -163,7 +163,7 @@
             makeWrapper "${pkgs.inkscape}/bin/inkscape" "$out/bin/inkscape-inkstitch" \
               --set INKSCAPE_DATADIR "$out/share" \
               --prefix PYTHONPATH ":" "$SITE_PACKAGES" \
-              --prefix PATH ":" "${selfpkgs.inkstitch-electron}"
+              --prefix PATH ":" "${selfpkgs.inkstitch-electron}/bin"
           '';
         };
       };

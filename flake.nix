@@ -31,27 +31,34 @@
         in assert pkgs.lib.isDerivation inkscape_python; inkscape_python;
         inkstitch_version = "3.0.1";
         pyembroidery_version = "1.4.36";
-        #inkstitch_src = pkgs.fetchzip {
-        #  url = "https://github.com/inkstitch/inkstitch/archive/refs/tags/v${inkstitch_version}.tar.gz";
-        #  sha256 = "";
-        #};
-        inkstitch_src = pkgs.fetchgit {
-          url = "https://codeberg.org/tropf/inkstitch.git";
-          rev = "28f6056ee3c03685c344645bec08f52eed3e3144";
-          hash = "sha256-5fwNYD/gjmvyOOFeDBw53ADEGdeIky9xj1q37zyVBzE=";
+        inkstitch_src_upstream = pkgs.fetchzip {
+          url = "https://github.com/inkstitch/inkstitch/archive/refs/tags/v${inkstitch_version}.tar.gz";
+          sha256 = "sha256-AC5D8l8GTg9tw7wVUCVI+WybsL4igpuqsGkCFlxI17s=";
         };
-        inkstitch_src_patched_yarn_deps = pkgs.applyPatches {
-          src = inkstitch_src;
-          #patches = [ ./patches/update_js_deps.patch ];
-          patches = [];
+
+        inkstitch_src = pkgs.applyPatches {
+          src = inkstitch_src_upstream;
+          patches = [
+            ./patches/0001-silence-warnings.patch
+            ./patches/0002-always-invoke-plugin-as-in-manual-install.patch
+            ./patches/0003-fix-path-search.patch
+            ./patches/0004-disable-electron-sandboxing.patch
+            ./patches/0005-rework-electron-build-and-invocation.patch
+            ./patches/0006-electron-fix-route-detection.patch
+            ./patches/0007-re-enable-menu-in-electron.patch
+            ./patches/0008-add-flaskserverport.json.patch
+            ./patches/0009-add-yarn.lock.patch
+          ];
         };
+
         inkstitch_electron_yarn_modules = pkgs.mkYarnPackage rec {
           pname = "inkstitch-yarn-deps";
           version = "${inkstitch_version}";
-          src = "${inkstitch_src_patched_yarn_deps}/electron";
+          src = "${inkstitch_src}/electron";
           packageJSON = "${src}/package.json";
           yarnLock = "${src}/yarn.lock";
         };
+
         inkstitch_python_env = given_pyembroidery: inkscape_python.withPackages (ps: [
           # inkstitch-owned python module -- must be given as argument!!
           given_pyembroidery
@@ -96,7 +103,7 @@
         inkstitch = pkgs.stdenv.mkDerivation rec {
           pname = "inkstitch";
           version = "${inkstitch_version}";
-          src = inkstitch_src_patched_yarn_deps;
+          src = inkstitch_src;
 
           # to overwrite version string
           GITHUB_REF = "${inkstitch_version}-nix";
@@ -114,6 +121,7 @@
             gettext
             which
           ];
+
           propagatedBuildInputs = with pkgs; [
             # pre-built yarn modules (circumvent required internet access of yarn/npm during build)
             inkstitch_electron_yarn_modules

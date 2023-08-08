@@ -1,0 +1,27 @@
+From a8f40b830012bc0e0f308f3a57b89968e7ac0093 Mon Sep 17 00:00:00 2001
+From: tropf <tropf@noreply.codeberg.org>
+Date: Tue, 8 Aug 2023 22:14:19 +0200
+Subject: [PATCH 7/9] re-enable menu in electron
+
+To make debugging easier, and because it does no harm, this patch
+re-enables the window menu and thus debugging in the electron component.
+---
+ electron/src/main/index.js | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/electron/src/main/index.js b/electron/src/main/index.js
+index f014c961..0204a87b 100644
+--- a/electron/src/main/index.js
++++ b/electron/src/main/index.js
+@@ -59,7 +59,7 @@ function createWindow() {
+     if(process.platform === "darwin" && !isDev) {
+         Menu.setApplicationMenu(Menu.buildFromTemplate([]));
+     } if(process.platform === "win32" || process.platform === "linux" && !isDev) {
+-        mainWindow.removeMenu();
++        //mainWindow.removeMenu();
+     }
+     mainWindow.maximize()
+     // save to PDF
+-- 
+2.40.1
+

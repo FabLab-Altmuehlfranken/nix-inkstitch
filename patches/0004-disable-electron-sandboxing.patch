@@ -1,0 +1,27 @@
+From 4b843d8fc8f30fab91a27a021a180d93c43a540e Mon Sep 17 00:00:00 2001
+From: tropf <tropf@noreply.codeberg.org>
+Date: Tue, 8 Aug 2023 22:02:37 +0200
+Subject: [PATCH 4/9] disable electron sandboxing
+
+Inkstitch is built for older electron versions without sandboxing
+enabled by default. The nix packaging uses more recent electron version,
+and thus disables these newer (more secure) defaults.
+---
+ electron/src/main/index.js | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/electron/src/main/index.js b/electron/src/main/index.js
+index 356e50fb..3158007d 100644
+--- a/electron/src/main/index.js
++++ b/electron/src/main/index.js
+@@ -44,6 +44,7 @@ function createWindow() {
+             preload: path.join(__dirname, 'preload.js'),
+             nodeIntegration: false,
+             contextIsolation: true,
++            worldSafeExecuteJavaScript: false
+         },
+     })
+     if (isDev) {
+-- 
+2.40.1
+

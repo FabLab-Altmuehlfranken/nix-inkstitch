@@ -1,0 +1,44 @@
+From e268b463ccb01028a4948a21171a682b60f1f56f Mon Sep 17 00:00:00 2001
+From: tropf <tropf@noreply.codeberg.org>
+Date: Tue, 8 Aug 2023 20:04:33 +0200
+Subject: [PATCH 2/9] always invoke plugin as in manual install
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+In the packaging for nix, the scripts are never bundled. The invocation
+works as in upstream inkstitch (i.e. through python), but the version is
+reported as packaged (instead of as ´manual install´).
+---
+ lib/inx/utils.py | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/lib/inx/utils.py b/lib/inx/utils.py
+index 31da518e..c006a149 100755
+--- a/lib/inx/utils.py
++++ b/lib/inx/utils.py
+@@ -25,7 +25,7 @@ def build_environment():
+     with open(os.path.join(version_path, 'LICENSE'), 'r') as license:
+         env.globals["inkstitch_license"] = "".join(license.readlines())
+ 
+-    if "BUILD" in os.environ:
++    if False:
+         # building a ZIP release, with inkstitch packaged as a binary
+         # About extension: add version information
+         with open(os.path.join(version_path, 'VERSION'), 'r') as version:
+@@ -41,10 +41,11 @@ def build_environment():
+             env.globals["command_tag"] = '<command location="inx">../bin/inkstitch</command>'
+             env.globals["image_path"] = '../bin/icons/'
+     else:
++        with open(os.path.join(version_path, 'VERSION'), 'r') as version:
++            env.globals["inkstitch_version"] = "%s" % version.readline()
+         # user is running inkstitch.py directly as a developer
+         env.globals["command_tag"] = '<command location="inx" interpreter="python">../inkstitch.py</command>'
+         env.globals["image_path"] = '../icons/'
+-        env.globals["inkstitch_version"] = "Manual Install"
+     return env
+ 
+ 
+-- 
+2.40.1
+

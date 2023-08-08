@@ -1,0 +1,24 @@
+From 4ae11928b83eb3af44d293e6432c6795b121ea77 Mon Sep 17 00:00:00 2001
+From: tropf <tropf@noreply.codeberg.org>
+Date: Tue, 8 Aug 2023 22:17:41 +0200
+Subject: [PATCH 8/9] add flaskserverport.json
+
+The added file is part of the packaging process for Inkstitch. In the
+nix version, it can be statically given with an empty object as content.
+---
+ electron/src/lib/flaskserverport.json | 3 +++
+ 1 file changed, 3 insertions(+)
+ create mode 100644 electron/src/lib/flaskserverport.json
+
+diff --git a/electron/src/lib/flaskserverport.json b/electron/src/lib/flaskserverport.json
+new file mode 100644
+index 00000000..7cec02a0
+--- /dev/null
++++ b/electron/src/lib/flaskserverport.json
+@@ -0,0 +1,3 @@
++{
++    "_nix_comment": "In upstream Inkstitch, this file is generated on build. For nix, this static file is sufficient."
++}
+-- 
+2.40.1
+

@@ -22,10 +22,27 @@ Answering **yes** is **recommended**, in order to avoid long builds (30+ min) on
 Color Palette installation is not supported.
 
 ## Notes on Packaging
-- packages contained:
-  - `pyembroidery`: python embroidery library
-  - `inkstitch`: Ink/Stitch itself
-  - `inkscape-inkstitch`: inkscape bundled with Ink/Stitch
+As user you should use the `inkscape-inkstitch` package.
+It is configured as default.
+The flake also contains further packages for internal use/debugging.
+The following packages are available (see `nix flake show`):
+
+- `inkscape-inkstitch`: inkscape bundled with Ink/Stitch
+- `pyembroidery`: python embroidery library, pulled from PyPI (does **not** use the version bundled with Ink/Stitch)
+- `pyembroidery-python`: a python environment where `pyembroidery` is available
+- `inkstitch`: Ink/Stitch itself (only the inkscape extension)
+- `inkstitch-electron`: helper for electron invocation
+
+The packaging follows [the official guide for manual setup](https://inkstitch.org/developers/inkstitch/manual-setup/).
+It consists of the following main parts:
+
+1. Prepare Python environment (including the `pyembroidery` library)
+2. Build the electron app (in `electron/` upstream)
+3. Generate the `.inx` files
+
+For this to properly work on nix, several patches are required.
+Please refer to the [`patches/` subdirectory](patches/) of this flake.
+
 - patches applied:
   - some path search includes `/usr`-paths, this is removed
   - `trimesh` include causes deprecation warnings, those are silenced
@@ -49,6 +66,10 @@ Color Palette installation is not supported.
 ## Troubleshooting
 - Is there an Inkstitch in `~/.config/inkscape/extensions/`?
   If yes, remove -- both inkstitches conflict.
+- The electron window stays blank.
+  Open dev tools (Ctrl-Shift-I), check console output. If in doubt please open an issue.
+- Inkscape is unresponsive when Ink/Stitch is open.
+  This is known and wont be fixed.
 
 ## License
 The code in this repository is licensed under [GPLv3 or later](./COPYING).

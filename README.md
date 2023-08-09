@@ -39,6 +39,7 @@ It consists of the following main parts:
 1. Prepare Python environment (including the `pyembroidery` library)
 2. Build the electron app (in `electron/` upstream)
 3. Generate the `.inx` files
+4. Combine everything through symlinking, add a wrapper to inject required binaries/python dependencies.
 
 For this to properly work on nix, several patches are required.
 Please refer to the [`patches/` subdirectory](patches/) of this flake.

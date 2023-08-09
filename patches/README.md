@@ -16,8 +16,8 @@ Upstream typically bundles the python files into standalone programs for distrib
 The build process is split into two steps.
 Upstream compiles a `main.js` and then bundles that into a standalone application.
 The nix version only compiles `main.js` and delivers that as package.
-Subsequently, build process and invocation are fixed.
-This causes assumptions about the routing that Ink/Stitch makes,
+Subsequently, build process and invocation are changed to reflect that.
+This breaks assumptions about the routing that Ink/Stitch makes,
 which are fixed through a patch.
 
 The menu is re-enabled in electron windows in order to allow for easier debugging.

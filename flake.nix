@@ -163,7 +163,7 @@
           postBuild = ''
             export SITE_PACKAGES=$(find "${inkstitch_python_env selfpkgs.pyembroidery}" -type d -name 'site-packages')
             rm -f $out/bin/inkscape
-            makeWrapper "${pkgs.inkscape}/bin/inkscape" "$out/bin/inkscape-inkstitch" \
+            makeWrapper "${pkgs.inkscape}/bin/inkscape" "$out/bin/inkscape" \
               --set INKSCAPE_DATADIR "$out/share" \
               --prefix PYTHONPATH ":" "$SITE_PACKAGES" \
               --prefix PATH ":" "${selfpkgs.inkstitch-electron}/bin"

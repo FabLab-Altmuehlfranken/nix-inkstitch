@@ -60,7 +60,7 @@
 
           # copied by hand from requirements.txt
           ps.inkex
-          ps.wxPython_4_1
+          ps.wxPython_4_2
           ps.networkx
           ps.shapely
           ps.lxml

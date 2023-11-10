@@ -27,8 +27,9 @@
         inkstitch_version = "3.0.1";
         pyembroidery_version = "1.4.36";
         inkstitch_src_upstream = pkgs.fetchzip {
-          url = "https://github.com/inkstitch/inkstitch/archive/refs/tags/v${inkstitch_version}.tar.gz";
-          sha256 = "sha256-AC5D8l8GTg9tw7wVUCVI+WybsL4igpuqsGkCFlxI17s=";
+          url = "https://github.com/inkstitch/inkstitch/archive/refs/heads/main.tar.gz";
+          # url = "https://github.com/inkstitch/inkstitch/archive/refs/tags/v${inkstitch_version}.tar.gz";
+          sha256 = "sha256-d55L+us1QtVQsyv51pm9e9ooFHuGf6rddyqrO3hkwjg=";
         };
 
         inkstitch_src = pkgs.applyPatches {

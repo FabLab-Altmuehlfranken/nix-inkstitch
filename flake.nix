@@ -29,7 +29,7 @@
         inkstitch_src_upstream = pkgs.fetchzip {
           url = "https://github.com/inkstitch/inkstitch/archive/refs/heads/main.tar.gz";
           # url = "https://github.com/inkstitch/inkstitch/archive/refs/tags/v${inkstitch_version}.tar.gz";
-          sha256 = "sha256-d55L+us1QtVQsyv51pm9e9ooFHuGf6rddyqrO3hkwjg=";
+          sha256 = "sha256-yWR6idNORuVFhoJCBCC1SzMrAUdNd2F+qUglS6cxe4k=";
         };
 
         inkstitch_src = pkgs.applyPatches {

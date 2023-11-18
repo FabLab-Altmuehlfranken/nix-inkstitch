@@ -8,7 +8,7 @@
     };
 
     nixpkgs = {
-      url = "github:nixos/nixpkgs/nixos-unstable-small";
+      url = "github:nixos/nixpkgs/nixos-unstable";
     };
   };
 
@@ -27,9 +27,9 @@
         inkstitch_version = "3.0.1";
         pyembroidery_version = "1.4.36";
         inkstitch_src_upstream = pkgs.fetchzip {
-          url = "https://github.com/inkstitch/inkstitch/archive/refs/heads/main.tar.gz";
+          url = "https://github.com/inkstitch/inkstitch/archive/2a99a0fac84d7dea2bc7d71ec6f465898ddd9cfe.tar.gz";
           # url = "https://github.com/inkstitch/inkstitch/archive/refs/tags/v${inkstitch_version}.tar.gz";
-          sha256 = "sha256-yWR6idNORuVFhoJCBCC1SzMrAUdNd2F+qUglS6cxe4k=";
+          sha256 = "sha256-sTQ4Ykgd0K9/ZSTvz5mwUSRE+VHygBKDQPAWypx0R8g=";
         };
 
         inkstitch_src = pkgs.applyPatches {

@@ -8,7 +8,7 @@
     };
 
     nixpkgs = {
-      url = "github:nixos/nixpkgs/nixos-unstable";
+      url = "github:nixos/nixpkgs/nixos-24.05";
     };
   };
 
@@ -61,7 +61,7 @@
 
           # copied by hand from requirements.txt
           ps.inkex
-          ps.wxPython_4_2
+          ps.wxpython
           ps.networkx
           ps.shapely
           ps.lxml

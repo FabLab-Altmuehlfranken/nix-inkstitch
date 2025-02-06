@@ -8,59 +8,46 @@
     };
 
     nixpkgs = {
-      url = "github:nixos/nixpkgs/nixos-24.05";
+      url = "github:nixos/nixpkgs/nixos-unstable";
     };
   };
 
   outputs = { self, nixpkgs, ... }:
     {
       overlays.default = selfpkgs: pkgs: let
-        inkscape_python = let
-          is_python_env = drv: (pkgs.lib.strings.hasPrefix "python3-" drv.name &&
-                                pkgs.lib.strings.hasSuffix "-env" drv.name);
-          inkscape_python = pkgs.lib.lists.findSingle
-            is_python_env
-            "none"
-            "multiple"
-            pkgs.inkscape.nativeBuildInputs;
-        in assert pkgs.lib.isDerivation inkscape_python; inkscape_python;
-        inkstitch_version = "3.0.1";
-        pyembroidery_version = "1.4.36";
-        inkstitch_src_upstream = pkgs.fetchzip {
-          url = "https://github.com/inkstitch/inkstitch/archive/2a99a0fac84d7dea2bc7d71ec6f465898ddd9cfe.tar.gz";
-          # url = "https://github.com/inkstitch/inkstitch/archive/refs/tags/v${inkstitch_version}.tar.gz";
-          sha256 = "sha256-sTQ4Ykgd0K9/ZSTvz5mwUSRE+VHygBKDQPAWypx0R8g=";
+        inkstitch_version = "3.1.0";
+        inkstitch_src_upstream = pkgs.fetchFromGitHub {
+          owner = "inkstitch";
+          repo = "inkstitch";
+          rev = "v${inkstitch_version}";
+          fetchSubmodules = true; # required to get the embedded pyembroidery
+          sha256 = "sha256-rfDkAA3xDiL3TQDLGBpxXstIG6xRVxOdMZDfpyMbhik=";
         };
 
         inkstitch_src = pkgs.applyPatches {
           src = inkstitch_src_upstream;
           patches = [
-            ./patches/0001-silence-warnings.patch
-            ./patches/0002-always-invoke-plugin-as-in-manual-install.patch
-            ./patches/0003-fix-path-search.patch
-            ./patches/0004-disable-electron-sandboxing.patch
-            ./patches/0005-rework-electron-build-and-invocation.patch
-            ./patches/0006-electron-fix-route-detection.patch
-            ./patches/0007-re-enable-menu-in-electron.patch
-            ./patches/0008-add-flaskserverport.json.patch
-            ./patches/0009-add-yarn.lock.patch
+            ./patches/0001-force-frozen-true.patch
+            ./patches/0002-plugin-invocation-use-python-script-as-entrypoint.patch
           ];
         };
 
-        inkstitch_electron_yarn_modules = pkgs.mkYarnPackage rec {
-          pname = "inkstitch-yarn-deps";
-          version = "${inkstitch_version}";
-          src = "${inkstitch_src}/electron";
-          packageJSON = "${src}/package.json";
-          yarnLock = "${src}/yarn.lock";
+      in {
+        pyembroidery = pkgs.python3Packages.buildPythonPackage {
+          pname = "pyembroidery";
+          version = "bundled-inkstitch-${inkstitch_version}";
+          src = "${inkstitch_src}/pyembroidery";
+          doCheck = false;
         };
 
-        inkstitch_python_env = given_pyembroidery: inkscape_python.withPackages (ps: [
-          # inkstitch-owned python module -- must be given as argument!!
-          given_pyembroidery
+        inkstitch-python-env = pkgs.python3.withPackages (ps: [
+          # inkstitch-owned python module
+          selfpkgs.pyembroidery
 
           # copied by hand from requirements.txt
+
           ps.inkex
+
           ps.wxpython
           ps.networkx
           ps.shapely
@@ -70,8 +57,6 @@
           ps.jinja2
           ps.requests
           ps.colormath
-          ps.stringcase
-          ps.tinycss2
           ps.flask
           ps.fonttools
           ps.trimesh
@@ -79,65 +64,46 @@
           ps.diskcache
           ps.flask-cors
         ]);
-      in {
-        pyembroidery = with inkscape_python.pkgs; buildPythonPackage rec {
-          pname = "pyembroidery";
-          version = pyembroidery_version;
-          src = fetchPypi {
-            inherit pname version;
-            sha256 = "sha256-GkEoxmdhjehd+ECrcJE7vVvRlnvk6qasO3NnCGlB/VQ=";
-          };
-          doCheck = false;
-        };
-
-        pyembroidery-python = inkstitch_python_env selfpkgs.pyembroidery;
-
-        inkstitch-electron = pkgs.writeShellScriptBin "inkstitch-electron" ''
-          ${pkgs.electron}/bin/electron $@
-        '';
 
         inkstitch = pkgs.stdenv.mkDerivation rec {
           pname = "inkstitch";
           version = "${inkstitch_version}";
           src = inkstitch_src;
 
-          # to overwrite version string
-          GITHUB_REF = "${inkstitch_version}-nix";
-          BUILD = "NixOS";
+          env = {
+            # to overwrite version string
+            GITHUB_REF = "${inkstitch_version}-nix";
+            BUILD = "NixOS";
+          };
 
           nativeBuildInputs = with pkgs; [
             # for python dependencies, hand-copied requirements.txt
-            selfpkgs.pyembroidery-python
-
-            # JS stuff
-            yarn
-            nodejs
+            selfpkgs.inkstitch-python-env
 
             # undocumented build dependencies
             gettext
             which
+
+            # for patching the invocation
+            gnused
           ];
-
-          propagatedBuildInputs = with pkgs; [
-            # pre-built yarn modules (circumvent required internet access of yarn/npm during build)
-            inkstitch_electron_yarn_modules
-
-            # used at runtime (see patches above)
-            selfpkgs.inkstitch-electron
-          ];
-
-          preBuild = ''
-            ln -sf ${inkstitch_electron_yarn_modules}/libexec/inkstitch-gui/node_modules electron/node_modules
+ 
+          postPatch = ''
+            # The invocation uses the inkscape-bundled python interpreter by default.
+            # To supply custom dependencies, one could touch the `$PYTHONPATH` environment variable.
+            # This takes a different approach and makes the invoked `inkstitch.py` a "stand-alone" executable.
+            # It will get executed just as any other script.
+            # The call to sed will then inject a shebang to a python binary will all dependencies available.
+            # Finally, the executable bit is set, so this is respected.
+            substituteInPlace lib/inx/utils.py --replace-fail ' interpreter="python"' ""
+            sed -i -e '1i#!${selfpkgs.inkstitch-python-env}/bin/python' inkstitch.py
+            chmod a+x inkstitch.py
           '';
 
           buildPhase = ''
             runHook preBuild
 
-            # required for openssl 3.0
-            export NODE_OPTIONS=--openssl-legacy-provider
-
-            yarn --cwd electron just-build
-            make inx
+            make manual
 
             runHook postBuild
           '';
@@ -153,21 +119,19 @@
           '';
         };
 
+
         inkscape-inkstitch = pkgs.symlinkJoin {
           name = "inkscape-inkstitch";
           paths = [
             pkgs.inkscape
             selfpkgs.inkstitch
           ];
-          nativeBuildInputs = with pkgs; [ makeWrapper findutils ];
+          nativeBuildInputs = with pkgs; [ makeWrapper ];
 
           postBuild = ''
-            export SITE_PACKAGES=$(find "${inkstitch_python_env selfpkgs.pyembroidery}" -type d -name 'site-packages')
             rm -f $out/bin/inkscape
-            makeWrapper "${pkgs.inkscape}/bin/inkscape" "$out/bin/inkscape" \
-              --set INKSCAPE_DATADIR "$out/share" \
-              --prefix PYTHONPATH ":" "$SITE_PACKAGES" \
-              --prefix PATH ":" "${selfpkgs.inkstitch-electron}/bin"
+            makeWrapper "${pkgs.inkscape}/bin/inkscape" "$out/bin/inkscape-inkstitch" \
+              --set INKSCAPE_DATADIR "$out/share"
           '';
         };
       };
